@@ -1,28 +1,28 @@
 import requests
 import pytest
-# Importamos la conexión para preparar los datos de prueba
+
 from conexion import mi_cursor, mi_db
 
 class Test_autores:
 
     def setup_class(self):
         self.url = "http://localhost:5002/autores"
-        # 1. Preparar un autor base para las pruebas
+     
         mi_cursor.execute("INSERT INTO autores (idAutor, nombre, email, idPais) VALUES ('T01', 'Autor Prueba', 'test@mail.com', 'CO')")
         mi_db.commit()
 
     def teardown_class(self):
-        # Limpiar los datos creados
+       
         mi_cursor.execute("DELETE FROM autores WHERE idAutor IN ('T01', 'T02')")
         mi_db.commit()
 
-    # PRUEBA 1: Listar
+   
     def test_lista(self):
         calculado = requests.get(self.url)
         assert calculado.status_code == 200
         assert calculado.json()["mensaje"] == "autores"
 
-    # PRUEBAS 2 y 3: Agregar (Éxito y Error)
+    
     @pytest.mark.parametrize(
         ["nuevo", "esperado"],
         [({"idAutor": "T02", "nombre": "Nuevo", "email": "n@m.com", "idPais": "CO"}, "Autor agregado con éxito"),
@@ -32,7 +32,7 @@ class Test_autores:
         calculado = requests.post(self.url, json=nuevo)
         assert esperado == calculado.json()["mensaje"]
 
-    # PRUEBAS 4 y 5: Búsqueda (Éxito y Error)
+   
     @pytest.mark.parametrize(
         ["id", "esperado"],
         [("T01", "Autor encontrado"),
@@ -42,7 +42,7 @@ class Test_autores:
         calculado = requests.get(f"{self.url}/{id}")
         assert esperado in calculado.json()["mensaje"]
 
-    # PRUEBAS 6 y 7: Eliminar (Éxito y Error)
+  
     @pytest.mark.parametrize(
         ["id", "esperado"],
         [("T02", "Autor eliminado con éxito!"),
@@ -52,7 +52,7 @@ class Test_autores:
         calculado = requests.delete(f"{self.url}/{id}")
         assert esperado in calculado.json()["mensaje"]
     
-    # PRUEBAS 8 y 9: Modificar (Éxito y Error)
+    
     @pytest.mark.parametrize(
         ["id", "datos", "esperado"],
         [("T01", {"idAutor": "T01", "nombre": "Editado", "email": "edit@m.com", "idPais": "CO"}, "Autor modificado con éxito"),
