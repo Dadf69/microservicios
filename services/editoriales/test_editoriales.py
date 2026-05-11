@@ -6,7 +6,7 @@ class Test_editoriales:
 
     def setup_class(self):
         self.url = "http://localhost:5003/editoriales"
-        # Insertar editorial de prueba (Asegúrate que 'CO' exista en tu tabla paises)
+       
         mi_cursor.execute("INSERT INTO editoriales (idEditorial, nombre, idPais) VALUES ('EDT01', 'Editorial Base', 'CO')")
         mi_db.commit()
 
@@ -14,13 +14,13 @@ class Test_editoriales:
         mi_cursor.execute("DELETE FROM editoriales WHERE idEditorial IN ('EDT01', 'EDT02')")
         mi_db.commit()
 
-    # 1. PRUEBA LISTAR
+    
     def test_lista(self):
         calculado = requests.get(self.url)
         assert calculado.status_code == 200
         assert calculado.json()["mensaje"] == "editoriales"
 
-    # 2 y 3. PRUEBAS AGREGAR
+
     @pytest.mark.parametrize(
         ["nuevo", "esperado"],
         [({"idEditorial": "EDT02", "nombre": "Nueva", "idPais": "CO"}, "Editorial agregada con éxito"),
@@ -30,7 +30,7 @@ class Test_editoriales:
         calculado = requests.post(self.url, json=nuevo)
         assert esperado == calculado.json()["mensaje"]
 
-    # 4 y 5. PRUEBAS BÚSQUEDA
+    
     @pytest.mark.parametrize(
         ["id", "esperado"],
         [("EDT01", "Editorial encontrada"),
@@ -40,7 +40,7 @@ class Test_editoriales:
         calculado = requests.get(f"{self.url}/{id}")
         assert esperado in calculado.json()["mensaje"]
 
-    # 6 y 7. PRUEBAS ELIMINAR
+
     @pytest.mark.parametrize(
         ["id", "esperado"],
         [("EDT02", "Editorial eliminada con éxito!"),
@@ -50,7 +50,7 @@ class Test_editoriales:
         calculado = requests.delete(f"{self.url}/{id}")
         assert esperado in calculado.json()["mensaje"]
     
-    # 8 y 9. PRUEBAS MODIFICAR
+
     @pytest.mark.parametrize(
         ["id", "datos", "esperado"],
         [("EDT01", {"idEditorial": "EDT01", "nombre": "Editada", "idPais": "CO"}, "Editorial modificada con éxito"),

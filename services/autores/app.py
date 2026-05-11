@@ -1,6 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_restful import Resource, Api
-# Cambiamos autores_logica por autores que es como se llama tu archivo
+
 from autores import AutoresMetodos 
 
 programa = Flask(__name__)
@@ -50,5 +50,5 @@ api.add_resource(ListaAutores, "/autores")
 api.add_resource(Autor, "/autores/<id>")
 
 if __name__ == "__main__":
-    # Puerto 5002 para autores
+    
     programa.run(host="0.0.0.0", debug=True, port=5002)
