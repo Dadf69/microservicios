@@ -7,13 +7,19 @@ class Test_autores:
 
     def setup_class(self):
         self.url = "http://localhost:5002/autores"
-     
+        mi_cursor.execute("SELECT idPais FROM paises")
+        existentes = {row[0] for row in mi_cursor.fetchall()}
+        for candidato in ["XX", "YY", "ZZ", "AA", "BB"]:
+            if candidato not in existentes:
+                self.invalid_pais = candidato
+                break
+        mi_cursor.execute("INSERT IGNORE INTO paises (idPais, nombre, continente) VALUES ('CO', 'Colombia', 'America')")
+        mi_cursor.execute("DELETE FROM autores WHERE idAutor IN ('T01', 'T02', 'T03')")
         mi_cursor.execute("INSERT INTO autores (idAutor, nombre, email, idPais) VALUES ('T01', 'Autor Prueba', 'test@mail.com', 'CO')")
         mi_db.commit()
 
     def teardown_class(self):
-       
-        mi_cursor.execute("DELETE FROM autores WHERE idAutor IN ('T01', 'T02')")
+        mi_cursor.execute("DELETE FROM autores WHERE idAutor IN ('T01', 'T02', 'T03')")
         mi_db.commit()
 
    
@@ -31,6 +37,11 @@ class Test_autores:
     def test_agregar(self, nuevo, esperado):
         calculado = requests.post(self.url, json=nuevo)
         assert esperado == calculado.json()["mensaje"]
+
+    def test_agregar_pais_inexistente(self):
+        nuevo = {"idAutor": "T03", "nombre": "Fail Pais", "email": "f@m.com", "idPais": self.invalid_pais}
+        calculado = requests.post(self.url, json=nuevo)
+        assert calculado.json()["mensaje"] == "Pais no existe"
 
    
     @pytest.mark.parametrize(
@@ -61,3 +72,8 @@ class Test_autores:
     def test_modificar(self, id, datos, esperado):
         calculado = requests.put(f"{self.url}/{id}", json=datos)
         assert esperado in calculado.json()["mensaje"]
+
+    def test_modificar_pais_inexistente(self):
+        datos = {"idAutor": "T01", "nombre": "Editado", "email": "edit@m.com", "idPais": self.invalid_pais}
+        calculado = requests.put(f"{self.url}/T01", json=datos)
+        assert calculado.json()["mensaje"] == "Pais no existe"

@@ -6,12 +6,19 @@ class Test_editoriales:
 
     def setup_class(self):
         self.url = "http://localhost:5003/editoriales"
-       
+        mi_cursor.execute("SELECT idPais FROM paises")
+        existentes = {row[0] for row in mi_cursor.fetchall()}
+        for candidato in ["XX", "YY", "ZZ", "AA", "BB"]:
+            if candidato not in existentes:
+                self.invalid_pais = candidato
+                break
+        mi_cursor.execute("INSERT IGNORE INTO paises (idPais, nombre, continente) VALUES ('CO', 'Colombia', 'America')")
+        mi_cursor.execute("DELETE FROM editoriales WHERE idEditorial IN ('EDT01', 'EDT02', 'EDT03')")
         mi_cursor.execute("INSERT INTO editoriales (idEditorial, nombre, idPais) VALUES ('EDT01', 'Editorial Base', 'CO')")
         mi_db.commit()
 
     def teardown_class(self):
-        mi_cursor.execute("DELETE FROM editoriales WHERE idEditorial IN ('EDT01', 'EDT02')")
+        mi_cursor.execute("DELETE FROM editoriales WHERE idEditorial IN ('EDT01', 'EDT02', 'EDT03')")
         mi_db.commit()
 
     
@@ -29,6 +36,11 @@ class Test_editoriales:
     def test_agregar(self, nuevo, esperado):
         calculado = requests.post(self.url, json=nuevo)
         assert esperado == calculado.json()["mensaje"]
+
+    def test_agregar_pais_inexistente(self):
+        nuevo = {"idEditorial": "EDT03", "nombre": "Fail Pais", "idPais": self.invalid_pais}
+        calculado = requests.post(self.url, json=nuevo)
+        assert calculado.json()["mensaje"] == "Pais no existe"
 
     
     @pytest.mark.parametrize(
@@ -59,3 +71,8 @@ class Test_editoriales:
     def test_modificar(self, id, datos, esperado):
         calculado = requests.put(f"{self.url}/{id}", json=datos)
         assert esperado in calculado.json()["mensaje"]
+
+    def test_modificar_pais_inexistente(self):
+        datos = {"idEditorial": "EDT01", "nombre": "Editada", "idPais": self.invalid_pais}
+        calculado = requests.put(f"{self.url}/EDT01", json=datos)
+        assert calculado.json()["mensaje"] == "Pais no existe"

@@ -17,6 +17,14 @@ class AutoresMetodos:
         db.close()
         return res
 
+    def pais_existe(self, idp):
+        db = conectar()
+        cursor = db.cursor(dictionary=True)
+        cursor.execute("SELECT 1 FROM paises WHERE idPais = %s", (idp,))
+        res = cursor.fetchone()
+        db.close()
+        return res is not None
+
     def agregar(self, id, nombre, email, idp):
         db = conectar()
         cursor = db.cursor()

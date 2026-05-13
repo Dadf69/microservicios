@@ -16,6 +16,8 @@ class ListaAutores(Resource):
         nuevo = request.json
         resultado = mis_autores.consultar(nuevo["idAutor"])
         if len(resultado) == 0:
+            if not mis_autores.pais_existe(nuevo["idPais"]):
+                return jsonify({"mensaje": "Pais no existe"})
             mis_autores.agregar(nuevo["idAutor"], nuevo["nombre"], nuevo["email"], nuevo["idPais"])
             return jsonify({"mensaje": "Autor agregado con éxito"})
         else:
@@ -43,6 +45,8 @@ class Autor(Resource):
             return jsonify({"mensaje": "Autor no existe"})
         else:
             nuevo = request.json
+            if not mis_autores.pais_existe(nuevo["idPais"]):
+                return jsonify({"mensaje": "Pais no existe"})
             mis_autores.modificar(id, nuevo["nombre"], nuevo["email"], nuevo["idPais"])
             return jsonify({"mensaje": "Autor modificado con éxito"})
 

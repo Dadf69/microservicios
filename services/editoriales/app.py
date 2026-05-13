@@ -15,6 +15,8 @@ class ListaEditoriales(Resource):
         nuevo = request.json
         resultado = mis_editoriales.consultar(nuevo["idEditorial"])
         if len(resultado) == 0:
+            if not mis_editoriales.pais_existe(nuevo["idPais"]):
+                return {"mensaje": "Pais no existe"}, 200
             mis_editoriales.agregar(nuevo["idEditorial"], nuevo["nombre"], nuevo["idPais"])
             return {"mensaje": "Editorial agregada con éxito"}, 201
         else:
@@ -42,6 +44,8 @@ class Editorial(Resource):
             return {"mensaje": "Editorial no existe"}, 200
         else:
             nuevo = request.json
+            if not mis_editoriales.pais_existe(nuevo["idPais"]):
+                return {"mensaje": "Pais no existe"}, 200
             mis_editoriales.modificar(id, nuevo["nombre"], nuevo["idPais"])
             return {"mensaje": "Editorial modificada con éxito"}, 200
 
